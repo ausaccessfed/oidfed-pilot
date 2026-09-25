@@ -1,7 +1,5 @@
 APP_ORIGIN ?= https://sp.dev.localhost
 
-.PHONY: build-image-javascript-spa-example run-image-javascript-spa-example
-
 build-image-javascript-spa-example:
 	docker build -t javascript-spa-example ./javascript-spa-example
 
