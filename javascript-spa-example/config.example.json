@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "federation_entity": {
+      "organization_name": "Federation Sign-in Demo",
+      "display_name": "Federation Sign-in Demo",
+      "description": "OpenID Federation relying-party example"
+    },
+    "openid_relying_party": {
+      "client_name": "Federation Sign-in Demo",
+      "scope": "openid profile email"
+    }
+  },
+  "providerMetadataPolicy": {
+    "openid_provider": {
+      "issuer": {
+        "essential": true
+      },
+      "authorization_endpoint": {
+        "essential": true
+      },
+      "token_endpoint": {
+        "essential": true
+      },
+      "jwks_uri": {
+        "essential": true
+      }
+    }
+  }
+}

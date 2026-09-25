@@ -1,0 +1,19 @@
+{
+  "name": "oidfed-federation-spa",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@oidfed/core": "^1.0.0",
+    "@oidfed/leaf": "^1.0.0",
+    "@oidfed/oidc": "^1.0.0",
+    "express": "^5.1.0",
+    "jose": "^6.1.0"
+  }
+}
