@@ -112,22 +112,18 @@ pushed to `main`. It also builds (without publishing) pull requests.
 Build and run the image locally from the repository root:
 
 ```sh
-make build-image
-make run-image
+make build-image-javascript-spa-example
+make run-image-javascript-spa-example
 ```
-
-Both targets find top-level folders containing a `Dockerfile`, show them as
-numbered options, and use the selected folder name as the image name.
 
 The image includes `config.example.json` as its default `/app/config.json`.
 The run target enables the development mock sign-in with
 `NODE_ENV=development` and `DEV_MOCK_AUTH=true`, as described above. Set
 `APP_ORIGIN` to use a different HTTPS origin, for example
-`APP_ORIGIN=https://your-public-origin.example make run-image`. Mount a
+`APP_ORIGIN=https://your-public-origin.example make run-image-javascript-spa-example`. Mount a
 customized `config.json` at `/app/config.json` to use deployment-specific
 metadata. Mock sign-in is for local development only; do not use this run
-target for deployment. It persists keys in the selected project's `.keys`
-directory.
+target for deployment. It persists keys in `javascript-spa-example/.keys`.
 
 For deployment, replace the local Caddy site address in this directory's
 `Caddyfile` with the public hostname and set `APP_ORIGIN` to that same origin. Keep
