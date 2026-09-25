@@ -113,14 +113,11 @@ Build and run the image locally from the repository root:
 
 ```sh
 make build-image
-Project folder: javascript-spa-example
 make run-image
-Project folder: javascript-spa-example
 ```
 
 Both targets find top-level folders containing a `Dockerfile`, show them as
-numbered options, and use the selected folder name as the image name. To skip
-the prompt, pass `PROJECT=javascript-spa-example` to `make`.
+numbered options, and use the selected folder name as the image name.
 
 The image includes `config.example.json` as its default `/app/config.json`.
 The run target enables the development mock sign-in with
