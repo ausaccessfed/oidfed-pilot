@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ffffff">
+    <title>Sign in | Australian Access Federation</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to sign in</a>
+    <main class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Australian Access Federation sign-in">
+          <span class="brand-mark" aria-hidden="true">AAF</span>
+          <span class="brand-name">Australian Access Federation</span>
+        </a>
+        <span class="environment">Secure federated access</span>
+      </header>
+
+      <section class="hero" id="main-content" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow">AUSTRALIAN ACCESS FEDERATION</p>
+          <h1 id="page-title">One secure sign-in.<br><span>Connected research.</span></h1>
+          <p class="intro">Use your organisation account to access research and education services across the federation.</p>
+          <div class="trust-note">
+            <span class="trust-icon" aria-hidden="true">i</span>
+            <p><strong>Your organisation remains in control</strong><br>Your credentials are entered with your organisation, not this service.</p>
+          </div>
+        </div>
+
+        <section class="login-card" aria-label="OpenID Federation sign-in">
+          <div id="signed-in" class="signed-in" hidden>
+            <div class="avatar" id="avatar" aria-hidden="true">A</div>
+            <p class="card-kicker">SIGNED IN</p>
+            <h2 id="welcome-title">Welcome</h2>
+            <p class="signed-email" id="profile-email"></p>
+            <div class="identity-detail">
+              <span>IDENTITY PROVIDER</span>
+              <strong id="profile-issuer">Australian Access Federation</strong>
+            </div>
+            <button class="button button-secondary" id="logout-button" type="button">Sign out</button>
+          </div>
+
+          <div id="sign-in">
+            <div class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 14v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <p class="card-kicker">SIGN IN</p>
+            <h2 id="card-title">Choose your organisation</h2>
+            <p class="card-copy">Select your identity provider from the Australian Access Federation directory.</p>
+            <button class="button" id="login-button" type="button" disabled>
+              <span class="button-label">Loading directory…</span>
+              <span class="button-arrow" aria-hidden="true">›</span>
+            </button>
+            <p class="privacy-note">Your password is never shared with this service.</p>
+          </div>
+
+          <div id="provider-directory" class="provider-directory" hidden>
+            <div class="directory-heading">
+              <p class="card-kicker">CHOOSE YOUR ORGANISATION</p>
+              <h2 id="directory-title">Select an identity provider</h2>
+              <p class="card-copy">Choose your organisation to continue. Published names are verified as part of the federation check after selection.</p>
+            </div>
+            <div id="provider-list" class="provider-list" role="list" aria-live="polite" aria-busy="false"></div>
+            <p id="directory-message" class="directory-message" role="status" aria-live="polite" hidden></p>
+            <button id="directory-retry" class="button button-secondary" type="button" hidden>Reload providers</button>
+            <p class="directory-note">Provider names are published federation metadata. Trust is validated after you select one.</p>
+          </div>
+
+          <div id="flow-panel" class="flow-panel" hidden>
+            <div class="flow-heading">
+              <div>
+                <p class="card-kicker">YOUR SIGN-IN</p>
+                <h2 id="flow-title">How federated sign-in works</h2>
+              </div>
+              <div class="flow-heading-side">
+                <span id="flow-counter" class="flow-counter" aria-live="polite">STEP 1 OF 5</span>
+                <span id="selected-provider" class="selected-provider" hidden></span>
+              </div>
+            </div>
+            <progress id="flow-progress" class="flow-progress" max="5" value="0" aria-label="Sign-in progress"></progress>
+            <ol class="flow-steps" aria-label="OpenID Federation sign-in steps">
+              <li class="flow-step" data-step="start">
+                <button class="step-trigger" type="button" disabled aria-expanded="false" aria-controls="details-start">
+                  <span class="step-number" aria-hidden="true">1</span>
+                  <span class="step-content">
+                    <span class="step-title" role="heading" aria-level="3">Start sign-in</span>
+                    <span class="step-description">You chose an identity provider. Your browser stays here while the server prepares a secure request.</span>
+                    <span class="step-status">Waiting</span>
+                    <span class="step-hint" hidden>View details</span>
+                  </span>
+                </button>
+                <div class="step-details" id="details-start" hidden>
+                  <p class="detail-label">WHAT WENT WRONG</p><p data-detail="whatWentWrong"></p>
+                  <p class="detail-label">WHAT WAS EXPECTED</p><p data-detail="expected"></p>
+                </div>
+              </li>
+              <li class="flow-step" data-step="federation">
+                <button class="step-trigger" type="button" disabled aria-expanded="false" aria-controls="details-federation">
+                  <span class="step-number" aria-hidden="true">2</span>
+                  <span class="step-content">
+                    <span class="step-title" role="heading" aria-level="3">Find and verify the provider</span>
+                    <span class="step-description">The server follows authority hints, then verifies signed statements, expiry, and metadata back to the configured Trust Anchor.</span>
+                    <span class="step-status">Waiting</span>
+                    <span class="step-hint" hidden>View details</span>
+                  </span>
+                </button>
+                <div class="step-details" id="details-federation" hidden>
+                  <p class="detail-label">WHAT WENT WRONG</p><p data-detail="whatWentWrong"></p>
+                  <p class="detail-label">WHAT WAS EXPECTED</p><p data-detail="expected"></p>
+                </div>
+              </li>
+              <li class="flow-step" data-step="request">
+                <button class="step-trigger" type="button" disabled aria-expanded="false" aria-controls="details-request">
+                  <span class="step-number" aria-hidden="true">3</span>
+                  <span class="step-content">
+                    <span class="step-title" role="heading" aria-level="3">Prepare a signed request</span>
+                    <span class="step-description">The signed Request Object includes your redirect URI and requested claims. State protects the callback, nonce binds the ID Token to this login, and PKCE binds the code exchange to this browser session.</span>
+                    <span class="step-status">Waiting</span>
+                    <span class="step-hint" hidden>View details</span>
+                  </span>
+                </button>
+                <div class="step-details" id="details-request" hidden>
+                  <p class="detail-label">WHAT WENT WRONG</p><p data-detail="whatWentWrong"></p>
+                  <p class="detail-label">WHAT WAS EXPECTED</p><p data-detail="expected"></p>
+                </div>
+              </li>
+              <li class="flow-step" data-step="provider">
+                <button class="step-trigger" type="button" disabled aria-expanded="false" aria-controls="details-provider">
+                  <span class="step-number" aria-hidden="true">4</span>
+                  <span class="step-content">
+                    <span class="step-title" role="heading" aria-level="3">Authenticate with your organisation</span>
+                    <span class="step-description">After you continue, your browser visits the identity provider. Your password is never sent to this service.</span>
+                    <span class="step-status">Waiting</span>
+                    <span class="step-hint" hidden>View details</span>
+                  </span>
+                </button>
+                <div class="step-details" id="details-provider" hidden>
+                  <p class="detail-label">WHAT WENT WRONG</p><p data-detail="whatWentWrong"></p>
+                  <p class="detail-label">WHAT WAS EXPECTED</p><p data-detail="expected"></p>
+                </div>
+              </li>
+              <li class="flow-step" data-step="response">
+                <button class="step-trigger" type="button" disabled aria-expanded="false" aria-controls="details-response">
+                  <span class="step-number" aria-hidden="true">5</span>
+                  <span class="step-content">
+                    <span class="step-title" role="heading" aria-level="3">Verify the response</span>
+                    <span class="step-description">The server checks state, exchanges the code with private-key client authentication and the PKCE verifier, then verifies the ID Token before creating your session.</span>
+                    <span class="step-status">Waiting</span>
+                    <span class="step-hint" hidden>View details</span>
+                  </span>
+                </button>
+                <div class="step-details" id="details-response" hidden>
+                  <p class="detail-label">WHAT WENT WRONG</p><p data-detail="whatWentWrong"></p>
+                  <p class="detail-label">WHAT WAS EXPECTED</p><p data-detail="expected"></p>
+                </div>
+              </li>
+            </ol>
+            <p id="flow-error" class="error-message flow-error" role="alert" aria-live="assertive" hidden></p>
+            <button id="continue-button" class="button" type="button" hidden>
+              <span class="button-label">Continue to your organisation</span>
+              <span class="button-arrow" aria-hidden="true">›</span>
+            </button>
+            <button id="retry-button" class="button button-secondary" type="button" hidden>Choose a provider to retry</button>
+          </div>
+
+          <p class="error-message" id="error-message" role="alert" aria-live="assertive" hidden></p>
+        </section>
+      </section>
+
+      <footer class="footer">
+        <span>Australian Access Federation</span>
+        <span class="footer-separator" aria-hidden="true"></span>
+        <span>OpenID Federation</span>
+      </footer>
+    </main>
+  </body>
+</html>
