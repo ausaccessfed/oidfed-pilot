@@ -28,6 +28,16 @@ const AAF_LIST_ENDPOINT = "https://ta.dev.aaf.edu.au/list";
 const FEDERATION_LIST_ENDPOINT = process.env.FEDERATION_LIST_ENDPOINT ?? AAF_LIST_ENDPOINT;
 const ENTITY_COLLECTION_ENDPOINT = process.env.ENTITY_COLLECTION_ENDPOINT;
 const TRUST_ANCHOR_ENTITY_ID = "https://ta.oidf-pilot.edugain.org";
+const devMockAuthEnabled =
+  process.env.NODE_ENV === "development" && process.env.DEV_MOCK_AUTH === "true";
+const devMockProviderEntityId = "https://idp.demo.test";
+const devMockProfile = {
+  subject: "demo-researcher-001",
+  name: "Demo Researcher",
+  email: "demo.researcher@example.test",
+  emailVerified: true,
+  issuer: devMockProviderEntityId,
+};
 const TRUST_ANCHOR_JWKS = {
   keys: [
     {
@@ -226,11 +236,27 @@ function setFlow(session, phase, failureStep = null, error = null, details = nul
 function publicFlow(session) {
   return {
     phase: session.flow?.phase ?? "idle",
+    devMock: session.flow?.devMock ?? false,
     providerEntityId: session.flow?.providerEntityId ?? null,
     failureStep: session.flow?.failureStep ?? null,
     error: session.flow?.error ?? null,
     details: session.flow?.details ?? null,
   };
+}
+
+async function completeDevelopmentLogin(session, runId) {
+  for (const phase of ["preparing_request", "awaiting_callback", "validating_response"]) {
+    await new Promise((resolve) => setTimeout(resolve, 650));
+    if (session.devMockRunId !== runId) return;
+    session.flow.phase = phase;
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 650));
+  if (session.devMockRunId !== runId) return;
+  session.profile = { ...devMockProfile };
+  session.expiresAt = Date.now() + sessionTtlMs;
+  session.flow.phase = "complete";
+  delete session.devMockRunId;
 }
 
 async function describeProvider(rawEntityId) {
@@ -347,9 +373,31 @@ app.get("/api/session", (request, response) => {
     authenticated: Boolean(session.profile),
     profile: session.profile ?? null,
     flow: publicFlow(session),
+    devMockAuthEnabled,
     providers: session.flow?.phase === "choose_provider" ? session.providers ?? [] : [],
   });
 });
+
+if (devMockAuthEnabled) {
+  app.post("/api/dev/login", requireSameOrigin, (request, response) => {
+    const session = getSession(request, response);
+    const runId = randomValue();
+    session.profile = undefined;
+    delete session.pending;
+    session.devMockRunId = runId;
+    session.flow = {
+      phase: "discovering",
+      devMock: true,
+      providerEntityId: devMockProviderEntityId,
+      failureStep: null,
+      error: null,
+      details: null,
+    };
+    response.setHeader("Cache-Control", "no-store");
+    response.status(202).json({ flow: publicFlow(session) });
+    void completeDevelopmentLogin(session, runId);
+  });
+}
 
 app.get("/api/flow", (request, response) => {
   const session = getSession(request, response);
@@ -361,6 +409,7 @@ app.post("/api/providers", requireSameOrigin, async (request, response) => {
   const session = getSession(request, response);
   session.profile = undefined;
   delete session.pending;
+  delete session.devMockRunId;
   session.providerCandidates = [];
   session.providers = [];
   session.flow = { phase: "listing_providers", providerEntityId: null, failureStep: null, error: null };
@@ -408,6 +457,7 @@ app.post("/api/login", requireSameOrigin, async (request, response) => {
   const opEntityId = entityId(selectedProvider);
   session.profile = undefined;
   delete session.pending;
+  delete session.devMockRunId;
   session.flow = {
     phase: "discovering",
     providerEntityId: opEntityId,
@@ -733,4 +783,7 @@ app.post("/api/logout", requireSameOrigin, (request, response) => {
 app.listen(port, () => {
   console.log(`Federation sign-in app listening on port ${port}`);
   console.log(`RP Entity Identifier: ${rpEntityId}`);
+  if (devMockAuthEnabled) {
+    console.warn("Development mock sign-in is enabled; simulated identities are not authenticated users.");
+  }
 });

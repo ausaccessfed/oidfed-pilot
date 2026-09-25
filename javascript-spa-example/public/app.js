@@ -1,6 +1,10 @@
 const signInPanel = document.querySelector("#sign-in");
-const signedInPanel = document.querySelector("#signed-in");
+const landingPanel = document.querySelector(".hero");
+const researcherDashboard = document.querySelector("#researcher-dashboard");
 const loginButton = document.querySelector("#login-button");
+const devLoginButton = document.querySelector("#dev-login-button");
+const devLoginNote = document.querySelector("#dev-login-note");
+const environmentLabel = document.querySelector("#environment-label");
 const logoutButton = document.querySelector("#logout-button");
 const errorMessage = document.querySelector("#error-message");
 const providerDirectory = document.querySelector("#provider-directory");
@@ -28,15 +32,23 @@ function showError(message) {
 
 function showProfile(profile) {
   sessionAuthenticated = true;
+  landingPanel.hidden = true;
+  researcherDashboard.hidden = false;
   signInPanel.hidden = true;
-  signedInPanel.hidden = false;
-  const name = profile.name || profile.email || "You're signed in";
-  document.querySelector("#welcome-title").textContent = profile.name ? `Welcome, ${profile.name}` : name;
+  document.querySelector("#welcome-title").textContent = profile.name
+    ? `Welcome, ${profile.name}`
+    : "Welcome to your research workspace";
   document.querySelector("#profile-email").textContent = profile.email ?? profile.subject;
   document.querySelector("#avatar").textContent = (profile.name || profile.email || "A").slice(0, 1).toUpperCase();
   document.querySelector("#profile-issuer").textContent = profile.issuer
     ? new URL(profile.issuer).hostname
     : "Australian Access Federation";
+  document.querySelector("#profile-email-status").textContent = profile.email
+    ? profile.emailVerified ? "Email verified" : "Email verification not provided"
+    : "No email shared";
+  document.querySelector("#dashboard-profile-state").textContent = profile.name || profile.email
+    ? "Profile loaded"
+    : "Basic identity only";
 }
 
 function renderProviders(providers) {
@@ -169,15 +181,17 @@ function renderFlow(flow) {
 
   if (flow.providerEntityId) {
     selectedProviderEntityId = flow.providerEntityId;
-    selectedProviderLabel.textContent = `Selected: ${new URL(selectedProviderEntityId).hostname}`;
+    selectedProviderLabel.textContent = flow.devMock
+      ? "Selected: Demo identity provider"
+      : `Selected: ${new URL(selectedProviderEntityId).hostname}`;
     selectedProviderLabel.hidden = false;
   } else {
     selectedProviderLabel.hidden = true;
   }
 
   if (phase === "complete") {
-    flowTitle.textContent = "Sign-in complete";
-    flowCounter.textContent = "COMPLETE";
+    flowTitle.textContent = flow.devMock ? "Demo sign-in complete" : "Sign-in complete";
+    flowCounter.textContent = flow.devMock ? "DEMO COMPLETE" : "COMPLETE";
   } else if (phase === "error") {
     flowTitle.textContent = "Sign-in needs attention";
     flowCounter.textContent = "NEEDS ATTENTION";
@@ -185,16 +199,24 @@ function renderFlow(flow) {
     flowTitle.textContent = "Your secure request is ready";
     flowCounter.textContent = "STEP 4 OF 5";
   } else if (phase === "awaiting_callback") {
-    flowTitle.textContent = "Continue with your organisation";
+    flowTitle.textContent = flow.devMock
+      ? "Simulating organisation sign-in…"
+      : "Continue with your organisation";
     flowCounter.textContent = "STEP 4 OF 5";
   } else if (phase === "validating_response") {
-    flowTitle.textContent = "Verifying your sign-in…";
+    flowTitle.textContent = flow.devMock
+      ? "Verifying the simulated response…"
+      : "Verifying your sign-in…";
     flowCounter.textContent = "STEP 5 OF 5";
   } else if (phase === "preparing_request") {
-    flowTitle.textContent = "Preparing your secure request…";
+    flowTitle.textContent = flow.devMock
+      ? "Preparing a simulated sign-in request…"
+      : "Preparing your secure request…";
     flowCounter.textContent = "STEP 3 OF 5";
   } else if (phase === "discovering") {
-    flowTitle.textContent = "Checking federation trust…";
+    flowTitle.textContent = flow.devMock
+      ? "Checking simulated federation trust…"
+      : "Checking federation trust…";
     flowCounter.textContent = "STEP 2 OF 5";
   }
 
@@ -335,6 +357,12 @@ async function loadSession() {
   const response = await fetch("/api/session", { headers: { Accept: "application/json" } });
   if (!response.ok) throw new Error("Your session could not be loaded.");
   const session = await response.json();
+  devLoginButton.hidden = !session.devMockAuthEnabled || session.authenticated;
+  devLoginNote.hidden = !session.devMockAuthEnabled || session.authenticated;
+  if (session.devMockAuthEnabled) {
+    environmentLabel.textContent = "Development mode · mock sign-in";
+    environmentLabel.classList.add("environment-demo");
+  }
   if (session.authenticated) showProfile(session.profile);
   if (session.flow.phase === "choose_provider") {
     renderProviders(session.providers);
@@ -352,6 +380,49 @@ async function loadSession() {
 loginButton.addEventListener("click", () => {
   errorMessage.hidden = true;
   requestProviders();
+});
+
+devLoginButton.addEventListener("click", async () => {
+  devLoginButton.disabled = true;
+  devLoginButton.setAttribute("aria-busy", "true");
+  devLoginButton.textContent = "Simulating sign-in…";
+  loginButton.disabled = true;
+  try {
+    const response = await fetch("/api/dev/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: "{}",
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "The demo sign-in could not start.");
+    renderFlow(result.flow);
+
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      await new Promise((resolve) => window.setTimeout(resolve, 400));
+      const flowResponse = await fetch("/api/flow", { headers: { Accept: "application/json" } });
+      if (!flowResponse.ok) throw new Error("The demo sign-in progress could not be loaded.");
+      const flow = await flowResponse.json();
+      renderFlow(flow);
+      if (flow.phase === "complete") {
+        await loadSession();
+        return;
+      }
+      if (flow.phase === "error") throw new Error(flow.error || "The demo sign-in failed.");
+    }
+    throw new Error("The demo sign-in took too long to complete.");
+  } catch (error) {
+    renderFlow({
+      phase: "error",
+      devMock: true,
+      failureStep: "start",
+      error: error.message || "The demo sign-in could not be completed.",
+    });
+  } finally {
+    devLoginButton.disabled = false;
+    devLoginButton.removeAttribute("aria-busy");
+    devLoginButton.textContent = "Run development sign-in";
+    loginButton.disabled = false;
+  }
 });
 
 directoryRetry.addEventListener("click", requestProviders);

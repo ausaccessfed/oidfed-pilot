@@ -10,16 +10,16 @@
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to sign in</a>
-    <main class="page-shell">
+    <main id="main-content" class="page-shell">
       <header class="topbar">
         <a class="brand" href="/" aria-label="Australian Access Federation sign-in">
           <span class="brand-mark" aria-hidden="true">AAF</span>
           <span class="brand-name">Australian Access Federation</span>
         </a>
-        <span class="environment">Secure federated access</span>
+        <span id="environment-label" class="environment">Secure federated access</span>
       </header>
 
-      <section class="hero" id="main-content" aria-labelledby="page-title">
+      <section class="hero" aria-labelledby="page-title">
         <div class="hero-copy">
           <p class="eyebrow">AUSTRALIAN ACCESS FEDERATION</p>
           <h1 id="page-title">One secure sign-in.<br><span>Connected research.</span></h1>
@@ -31,18 +31,6 @@
         </div>
 
         <section class="login-card" aria-label="OpenID Federation sign-in">
-          <div id="signed-in" class="signed-in" hidden>
-            <div class="avatar" id="avatar" aria-hidden="true">A</div>
-            <p class="card-kicker">SIGNED IN</p>
-            <h2 id="welcome-title">Welcome</h2>
-            <p class="signed-email" id="profile-email"></p>
-            <div class="identity-detail">
-              <span>IDENTITY PROVIDER</span>
-              <strong id="profile-issuer">Australian Access Federation</strong>
-            </div>
-            <button class="button button-secondary" id="logout-button" type="button">Sign out</button>
-          </div>
-
           <div id="sign-in">
             <div class="card-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none">
@@ -57,6 +45,12 @@
               <span class="button-label">Loading directory…</span>
               <span class="button-arrow" aria-hidden="true">›</span>
             </button>
+            <button id="dev-login-button" class="button button-secondary" type="button" hidden>
+              Run development sign-in
+            </button>
+            <p id="dev-login-note" class="dev-login-note" hidden>
+              Development demo only. Federation and identity-provider responses are simulated.
+            </p>
             <p class="privacy-note">Your password is never shared with this service.</p>
           </div>
 
@@ -170,6 +164,76 @@
           </div>
 
           <p class="error-message" id="error-message" role="alert" aria-live="assertive" hidden></p>
+        </section>
+      </section>
+
+      <section id="researcher-dashboard" class="researcher-dashboard" aria-labelledby="welcome-title" hidden>
+        <header class="dashboard-header">
+          <div class="dashboard-welcome">
+            <p class="eyebrow">RESEARCHER WORKSPACE</p>
+            <h1 id="welcome-title" class="dashboard-title">Welcome</h1>
+            <p class="dashboard-lead">Your organisation account is connected. This example dashboard does not access research-service data.</p>
+          </div>
+          <section class="researcher-account" aria-label="Signed-in researcher account">
+            <div class="researcher-account-heading">
+              <div class="avatar" id="avatar" aria-hidden="true">A</div>
+              <div>
+                <p class="card-kicker">YOUR ACCOUNT</p>
+                <p class="signed-email" id="profile-email"></p>
+              </div>
+            </div>
+            <div class="identity-detail">
+              <span>IDENTITY PROVIDER</span>
+              <strong id="profile-issuer">Australian Access Federation</strong>
+              <span id="profile-email-status" class="account-status"></span>
+            </div>
+            <button class="button button-secondary" id="logout-button" type="button">Sign out</button>
+          </section>
+        </header>
+
+        <section class="workspace-section" aria-labelledby="workspace-title">
+          <div class="workspace-heading">
+            <div>
+              <p class="card-kicker">FEDERATED RESEARCH</p>
+              <h2 id="workspace-title">Your research workspace</h2>
+              <p class="workspace-lead">A starting point for services connected to your institutional identity.</p>
+            </div>
+            <span class="dashboard-badge">DEMO WORKSPACE</span>
+          </div>
+          <div class="dashboard-grid">
+            <article class="dashboard-card">
+              <span class="dashboard-icon" aria-hidden="true">01</span>
+              <p class="dashboard-card-label">ACCESS</p>
+              <h3>Research services</h3>
+              <p>Federated sign-in can connect your organisation account to participating research and education services.</p>
+              <span class="dashboard-card-state">No service directory connected</span>
+            </article>
+            <article class="dashboard-card">
+              <span class="dashboard-icon" aria-hidden="true">02</span>
+              <p class="dashboard-card-label">IDENTITY</p>
+              <h3>Institutional account</h3>
+              <p>Your organisation is the identity provider for this sign-in session.</p>
+              <span class="dashboard-card-state dashboard-card-state-active">Identity connected</span>
+            </article>
+            <article class="dashboard-card">
+              <span class="dashboard-icon" aria-hidden="true">03</span>
+              <p class="dashboard-card-label">PROFILE</p>
+              <h3>Researcher profile</h3>
+              <p>Basic profile claims are provided by your identity provider for this session.</p>
+              <span class="dashboard-card-state" id="dashboard-profile-state">Profile loaded</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="activity-panel" aria-labelledby="activity-title">
+          <div class="activity-heading">
+            <div>
+              <p class="card-kicker">WORKSPACE</p>
+              <h2 id="activity-title">Recent activity</h2>
+            </div>
+            <span class="activity-note">EXAMPLE VIEW</span>
+          </div>
+          <p class="activity-empty">No research activity is connected to this demo yet. Your authenticated identity is shown above; research-service data is not fetched or stored here.</p>
         </section>
       </section>
 

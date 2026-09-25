@@ -38,6 +38,23 @@ Open <https://sp.dev.localhost>. Caddy provisions local HTTPS and proxies to the
 server on port 3000. Set `APP_ORIGIN` to the exact HTTPS origin (no trailing
 slash); it is the RP Entity Identifier and determines the callback URL.
 
+### Mock sign-in for UI development
+
+To exercise the sign-in screens without contacting the federation or an identity
+provider, start the app with both development settings enabled:
+
+```sh
+NODE_ENV=development DEV_MOCK_AUTH=true \
+  APP_ORIGIN=https://sp.dev.localhost PORT=3000 npm start
+```
+
+The sign-in card then offers **Run development sign-in**. It simulates the
+federation, request, provider, and response stages and signs in a demo profile
+(`demo.researcher@example.test`). The header labels mock mode, and the server
+prints a warning. This is not a real authentication flow: the simulated profile
+and responses must never be used to authorize access, and the mock endpoint is
+not registered unless `NODE_ENV=development` and `DEV_MOCK_AUTH=true`.
+
 On sign-in, the app displays the providers from the federation directory as
 selectable cards. It uses `https://ta.dev.aaf.edu.au/list` with the
 `openid_provider` entity-type filter. If a Federation Entity Collection endpoint
@@ -77,8 +94,11 @@ federation chain and resolved metadata; create a signed Request Object with
 one-time `state`, `nonce`, and PKCE values; authenticate at the provider; and
 validate the callback and ID Token. Each stage is visible in the interface.
 If a stage fails, activate its highlighted step to see what went wrong and what
-the protocol expected. Only selected profile claims are held in the server-side
-session; OAuth tokens are not exposed to the browser.
+the protocol expected. After authentication, the SPA shows a researcher
+workspace with the returned identity details. Its service and activity cards
+are illustrative only; the example does not fetch research-service data. Only
+selected profile claims are held in the server-side session; OAuth tokens are
+not exposed to the browser.
 
 The app uses in-memory sessions and is an integration starter, not a complete
 production deployment. Add operational controls such as rate limiting,
