@@ -9,14 +9,20 @@
     <script type="module" src="/app.js"></script>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to sign in</a>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <main id="main-content" class="page-shell">
       <header class="topbar">
         <a class="brand" href="/" aria-label="Australian Access Federation sign-in">
           <span class="brand-mark" aria-hidden="true">AAF</span>
           <span class="brand-name">Australian Access Federation</span>
         </a>
-        <span id="environment-label" class="environment">Secure federated access</span>
+        <div class="topbar-actions">
+          <span id="environment-label" class="environment">Secure federated access</span>
+          <nav class="topbar-nav" aria-label="Information">
+            <button id="service-info-button" class="topbar-link" type="button" aria-controls="service-info-screen">Service metadata</button>
+            <button id="provider-policy-button" class="topbar-link" type="button" aria-controls="provider-policy-screen">Provider policy</button>
+          </nav>
+        </div>
       </header>
 
       <section class="hero" aria-labelledby="page-title">
@@ -28,6 +34,12 @@
             <span class="trust-icon" aria-hidden="true">i</span>
             <p><strong>Your organisation remains in control</strong><br>Your credentials are entered with your organisation, not this service.</p>
           </div>
+          <aside class="trust-anchor-note" aria-label="Federation trust anchor">
+            <p class="card-kicker">FEDERATION TRUST</p>
+            <h2>Configured Trust Anchor</h2>
+            <p>This demo validates signed provider chains to the eduGAIN pilot root, <code>ta.oidf-pilot.edugain.org</code>.</p>
+            <a href="https://explore.oidfed.com/" target="_blank" rel="noopener noreferrer">Explore the trust anchor and federation chains</a>
+          </aside>
         </div>
 
         <section class="login-card" aria-label="OpenID Federation sign-in">
@@ -235,6 +247,30 @@
           </div>
           <p class="activity-empty">No research activity is connected to this demo yet. Your authenticated identity is shown above; research-service data is not fetched or stored here.</p>
         </section>
+      </section>
+
+      <section id="service-info-screen" class="service-info-screen" aria-labelledby="service-info-title" hidden>
+        <header class="service-info-heading">
+          <p class="eyebrow">OPENID FEDERATION</p>
+          <h1 id="service-info-title" class="dashboard-title">Service metadata</h1>
+          <p class="dashboard-lead">The public claims from this service's current signed Federation Entity Configuration.</p>
+          <a class="metadata-source-link" href="/.well-known/openid-federation" target="_blank" rel="noopener noreferrer">Open the signed Entity Configuration</a>
+        </header>
+        <p id="metadata-status" class="metadata-status" role="status" aria-live="polite">Load the published metadata to inspect this service.</p>
+        <div id="metadata-content" class="metadata-content" aria-busy="false" hidden></div>
+        <button id="metadata-retry" class="button button-secondary metadata-retry" type="button" hidden>Reload metadata</button>
+      </section>
+
+      <section id="provider-policy-screen" class="service-info-screen" aria-labelledby="provider-policy-title" hidden>
+        <header class="service-info-heading">
+          <p class="eyebrow">LOCAL RELYING-PARTY RULES</p>
+          <h1 id="provider-policy-title" class="dashboard-title">Provider metadata policy</h1>
+          <p class="dashboard-lead">Additional standard metadata rules applied to discovered OpenID Providers after federation trust validation. This is local configuration, not a federation authority policy.</p>
+        </header>
+        <p id="provider-policy-status" class="metadata-status" role="status" aria-live="polite">Load the configured policy to inspect its requirements.</p>
+        <p id="provider-policy-empty" class="metadata-status" hidden></p>
+        <div id="provider-policy-content" class="metadata-content" aria-busy="false" hidden></div>
+        <button id="provider-policy-retry" class="button button-secondary metadata-retry" type="button" hidden>Reload policy</button>
       </section>
 
       <footer class="footer">

@@ -23,9 +23,11 @@ reverse proxy in separate terminals:
 
 ```sh
 cd javascript-spa-example
+cp .env.example .env
+cp config.example.json config.json
 npm install
 caddy trust
-APP_ORIGIN=https://sp.dev.localhost PORT=3000 npm start
+npm start
 ```
 
 In another terminal, from this example's directory, run Caddy:
@@ -37,6 +39,30 @@ caddy run --config Caddyfile
 Open <https://sp.dev.localhost>. Caddy provisions local HTTPS and proxies to the Node
 server on port 3000. Set `APP_ORIGIN` to the exact HTTPS origin (no trailing
 slash); it is the RP Entity Identifier and determines the callback URL.
+`npm start` loads `.env` when present. Values already set in the shell take
+precedence.
+
+### Metadata configuration
+
+Customize `config.json` (starting from `config.example.json`) to set the
+published `metadata.federation_entity` and
+`metadata.openid_relying_party` fields. The environment variables
+`ORGANIZATION_NAME`, `ENTITY_DISPLAY_NAME`, `OIDC_CLIENT_NAME`, and `OIDC_SCOPE`
+override the corresponding file values. `PROVIDER_METADATA_POLICY` accepts a
+JSON policy object and overrides the file policy. `OIDC_SCOPE` must contain
+`openid`.
+The app always generates its own signing JWKS and callback URI, and advertises
+only the authorization-code and `private_key_jwt` flow it implements.
+
+`providerMetadataPolicy` is an additional local policy applied to discovered
+OpenID Provider metadata after the federation chain has been validated. It uses
+the standard OpenID Federation policy operators and is shown in its own
+**Provider policy** screen. It does not bypass or replace policies from the
+validated federation chain. An RP leaf cannot publish the federation
+`metadata_policy` claim; that claim is for federation authorities issuing
+subordinate statements. The service's own public metadata appears in its signed
+Entity Configuration. Configuration values under `metadata` are public; do not
+put secrets there. Set `OIDFED_CONFIG_FILE` to select a different JSON file.
 
 ### Mock sign-in for UI development
 
@@ -61,6 +87,14 @@ selectable cards. It uses `https://ta.dev.aaf.edu.au/list` with the
 is available, set `ENTITY_COLLECTION_ENDPOINT` to use that endpoint instead.
 Provider display names come from public metadata and are not treated as trusted
 until the selected provider's chain is validated.
+
+Use **Service metadata** in the top navigation to inspect every public claim in
+this RP's current signed Entity Configuration, with concise field descriptions.
+Use **Provider policy** to review local rules applied to discovered provider
+metadata. The metadata screen reads the generated statement served at
+`/.well-known/openid-federation`; it is not an editable configuration view.
+The landing page links to the OpenID Federation Explorer and identifies the
+eduGAIN pilot Trust Anchor pinned by this example.
 
 Local HTTPS supports browser development, but the remote AAF OP cannot reach
 `.localhost` to fetch the RP's Federation Entity Configuration. In addition,
