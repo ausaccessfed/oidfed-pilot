@@ -231,7 +231,8 @@ h1 span { color: var(--aaf-blue); }
 .trust-anchor-note h2 { margin: 0 0 7px; color: #343b40; font-size: 15px; }
 .trust-anchor-note p:not(.card-kicker) { margin: 0 0 9px; color: var(--muted); font-size: 11px; line-height: 1.6; }
 .trust-anchor-note code { color: #344b5c; font-size: 10px; overflow-wrap: anywhere; }
-.trust-anchor-note a { font-size: 11px; font-weight: 700; line-height: 1.6; }
+.trust-anchor-links { display: grid; justify-items: start; gap: 4px; }
+.trust-anchor-note a { font-size: 11px; font-weight: 700; line-height: 1.6; overflow-wrap: anywhere; }
 
 .trust-note strong { color: #3c464d; font-size: 13px; font-weight: 700; }
 

@@ -93,8 +93,8 @@ this RP's current signed Entity Configuration, with concise field descriptions.
 Use **Provider policy** to review local rules applied to discovered provider
 metadata. The metadata screen reads the generated statement served at
 `/.well-known/openid-federation`; it is not an editable configuration view.
-The landing page links to the OpenID Federation Explorer and identifies the
-eduGAIN pilot Trust Anchor pinned by this example.
+The landing page links directly to the OpenID Federation Explorer views for the
+eduGAIN pilot Trust Anchor and AAF intermediate used by this example.
 
 Local HTTPS supports browser development, but the remote AAF OP cannot reach
 `.localhost` to fetch the RP's Federation Entity Configuration. In addition,
