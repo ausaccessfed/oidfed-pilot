@@ -16,6 +16,32 @@ and `sender.s2s.dev.localhost` on port `8443`. Caddy routes the sender domain
 to the sender service and the other two domains to the ingester and embedded
 Trust Anchor.
 
+## How it works
+
+The demo's `POST /send` endpoint triggers this sender-to-ingester exchange:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant S as Sender
+    participant I as Ingester (OAuth AS and resource)
+    participant TA as Trust Anchor
+
+    S->>I: Discover ingester Entity Configuration and OAuth metadata
+    I-->>S: Signed Entity Configuration
+    S->>TA: Resolve ingester trust chain
+    TA-->>S: Signed subordinate statement
+    S->>I: POST /token with client_credentials and private_key_jwt
+    I->>S: Discover sender Entity Configuration
+    S-->>I: Signed Entity Configuration with OAuth client JWKS
+    I->>TA: Resolve sender trust chain
+    TA-->>I: Signed subordinate statement
+    Note over I: Verify assertion and reject reused jti
+    I-->>S: Short-lived bearer access token
+    S->>I: POST /data with token and JSON payload
+    I-->>S: 201 Accepted
+```
+
 ## Bare-metal setup
 
 Requires Node.js 22.12 or later and [Caddy](https://caddyserver.com/docs/install).
