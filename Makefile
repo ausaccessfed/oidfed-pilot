@@ -9,8 +9,6 @@ run-image-javascript-spa-example:
 		-v "$(CURDIR)/javascript-spa-example/.keys:/app/.keys" \
 		javascript-spa-example
 
-.PHONY: prepare-image-javascript-oauth-s2s-example build-image-javascript-oauth-s2s-example setup-image-javascript-oauth-s2s-example run-image-javascript-oauth-s2s-example stop-image-javascript-oauth-s2s-example
-
 prepare-image-javascript-oauth-s2s-example:
 	@test -f javascript-oauth-s2s-example/.env || cp javascript-oauth-s2s-example/.env.dist javascript-oauth-s2s-example/.env
 
