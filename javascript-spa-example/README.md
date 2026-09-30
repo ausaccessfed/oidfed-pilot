@@ -23,8 +23,7 @@ reverse proxy in separate terminals:
 
 ```sh
 cd javascript-spa-example
-cp .env.example .env
-cp config.example.json config.json
+cp .env.dist .env
 npm install
 caddy trust
 npm start
@@ -44,13 +43,10 @@ precedence.
 
 ### Metadata configuration
 
-Customize `config.json` (starting from `config.example.json`) to set the
-published `metadata.federation_entity` and
-`metadata.openid_relying_party` fields. The environment variables
-`ORGANIZATION_NAME`, `ENTITY_DISPLAY_NAME`, `OIDC_CLIENT_NAME`, and `OIDC_SCOPE`
-override the corresponding file values. `PROVIDER_METADATA_POLICY` accepts a
-JSON policy object and overrides the file policy. `OIDC_SCOPE` must contain
-`openid`.
+Configure the service entirely through environment variables. `ORGANIZATION_NAME`,
+`ENTITY_DISPLAY_NAME`, `OIDC_CLIENT_NAME`, and `OIDC_SCOPE` control the public
+RP metadata, and `PROVIDER_METADATA_POLICY` accepts a JSON policy object for
+local OpenID Provider metadata checks. `OIDC_SCOPE` must contain `openid`.
 The app always generates its own signing JWKS and callback URI, and advertises
 only the authorization-code and `private_key_jwt` flow it implements.
 `AAF_INTERMEDIATE_ENTITY_ID`, `AAF_LIST_ENDPOINT`, and `FEDERATION_LIST_ENDPOINT`
@@ -67,9 +63,9 @@ the standard OpenID Federation policy operators and is shown in its own
 **Provider policy** screen. It does not bypass or replace policies from the
 validated federation chain. An RP leaf cannot publish the federation
 `metadata_policy` claim; that claim is for federation authorities issuing
-subordinate statements. The service's own public metadata appears in its signed
-Entity Configuration. Configuration values under `metadata` are public; do not
-put secrets there. Set `OIDFED_CONFIG_FILE` to select a different JSON file.
+subordinate statements. The service's own public metadata is derived from the
+environment and published in its signed Entity Configuration. Do not put
+secrets in these values.
 
 ### Mock sign-in for UI development
 
@@ -125,14 +121,12 @@ make build-image-javascript-spa-example
 make run-image-javascript-spa-example
 ```
 
-The image includes `config.example.json` as its default `/app/config.json`.
 The run target enables the development mock sign-in with
 `NODE_ENV=development` and `DEV_MOCK_AUTH=true`, as described above. Set
 `APP_ORIGIN` to use a different HTTPS origin, for example
-`APP_ORIGIN=https://your-public-origin.example make run-image-javascript-spa-example`. Mount a
-customized `config.json` at `/app/config.json` to use deployment-specific
-metadata. Mock sign-in is for local development only; do not use this run
-target for deployment. It persists keys in `javascript-spa-example/.keys`.
+`APP_ORIGIN=https://your-public-origin.example make run-image-javascript-spa-example`. Mock sign-in is for local development only;
+do not use this run target for deployment. It persists keys in
+`javascript-spa-example/.keys`.
 
 For deployment, replace the local Caddy site address in this directory's
 `Caddyfile` with the public hostname and set `APP_ORIGIN` to that same origin. Keep

@@ -6,8 +6,9 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
 COPY server.js ./
+COPY app ./app
+COPY config ./config
 COPY public ./public
-COPY config.example.json ./config.json
 
 ENV NODE_ENV=production
 EXPOSE 3000
