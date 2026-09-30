@@ -1,0 +1,4 @@
+.env
+.keys/
+.caddy-root.crt
+node_modules/
