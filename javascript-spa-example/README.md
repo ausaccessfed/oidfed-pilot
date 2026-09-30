@@ -53,6 +53,13 @@ JSON policy object and overrides the file policy. `OIDC_SCOPE` must contain
 `openid`.
 The app always generates its own signing JWKS and callback URI, and advertises
 only the authorization-code and `private_key_jwt` flow it implements.
+`AAF_INTERMEDIATE_ENTITY_ID`, `AAF_LIST_ENDPOINT`, and `FEDERATION_LIST_ENDPOINT`
+override the default federation directory bootstrap values.
+`TRUST_ANCHOR_ENTITY_ID` and `TRUST_ANCHOR_JWKS` override the default trust
+anchor used for federation validation. To configure multiple trust anchors, set
+`TRUST_ANCHORS_JSON` to a JSON array of `{ entityId, jwks }` objects. When the
+app queries a Federation Entity Collection endpoint, it uses the first trust
+anchor in that list for the `trust_anchor` parameter.
 
 `providerMetadataPolicy` is an additional local policy applied to discovered
 OpenID Provider metadata after the federation chain has been validated. It uses
@@ -84,7 +91,9 @@ not registered unless `NODE_ENV=development` and `DEV_MOCK_AUTH=true`.
 On sign-in, the app displays the providers from the federation directory as
 selectable cards. It uses `https://ta.dev.aaf.edu.au/list` with the
 `openid_provider` entity-type filter. If a Federation Entity Collection endpoint
-is available, set `ENTITY_COLLECTION_ENDPOINT` to use that endpoint instead.
+is available, set `ENTITY_COLLECTION_ENDPOINT` to use that endpoint instead, or
+override `AAF_LIST_ENDPOINT` / `FEDERATION_LIST_ENDPOINT` for the default
+directory bootstrap.
 Provider display names come from public metadata and are not treated as trusted
 until the selected provider's chain is validated.
 
@@ -139,7 +148,9 @@ root Trust Anchor. The app pins the root's public key in `server.js` and uses
 the AAF intermediate as its own authority hint. The key is public material, not
 a secret; confirm key changes with the federation operator and update the pin
 before a Trust Anchor key rotation. Do not replace the pin with a key blindly
-fetched during login: that would remove the trust bootstrap.
+fetched during login: that would remove the trust bootstrap. If you override the
+trust anchor via environment variables, use the operator-provided entity
+configuration and JWKS for that anchor.
 
 ## Flow and protections
 

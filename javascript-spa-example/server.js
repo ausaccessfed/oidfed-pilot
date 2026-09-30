@@ -30,11 +30,27 @@ import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const configPath = path.resolve(__dirname, process.env.OIDFED_CONFIG_FILE ?? "config.json");
-const AAF_INTERMEDIATE_ENTITY_ID = "https://ta.dev.aaf.edu.au";
-const AAF_LIST_ENDPOINT = "https://ta.dev.aaf.edu.au/list";
+const DEFAULT_AAF_INTERMEDIATE_ENTITY_ID = "https://ta.dev.aaf.edu.au";
+const DEFAULT_AAF_LIST_ENDPOINT = "https://ta.dev.aaf.edu.au/list";
+const AAF_INTERMEDIATE_ENTITY_ID =
+  process.env.AAF_INTERMEDIATE_ENTITY_ID ?? DEFAULT_AAF_INTERMEDIATE_ENTITY_ID;
+const AAF_LIST_ENDPOINT = process.env.AAF_LIST_ENDPOINT ?? DEFAULT_AAF_LIST_ENDPOINT;
 const FEDERATION_LIST_ENDPOINT = process.env.FEDERATION_LIST_ENDPOINT ?? AAF_LIST_ENDPOINT;
 const ENTITY_COLLECTION_ENDPOINT = process.env.ENTITY_COLLECTION_ENDPOINT;
-const TRUST_ANCHOR_ENTITY_ID = "https://ta.oidf-pilot.edugain.org";
+const DEFAULT_TRUST_ANCHOR_ENTITY_ID = "https://ta.oidf-pilot.edugain.org";
+const DEFAULT_TRUST_ANCHOR_JWKS = {
+  keys: [
+    {
+      kty: "EC",
+      crv: "P-256",
+      alg: "ES256",
+      use: "sig",
+      kid: "xcXdyJ2_7cOd05QIqfpdrb3j5-mYFw8dqdcqzEh0lUw",
+      x: "hh5u_VrRXLaXNAdZX2CQWNAXFqgDCYhYGY1y1qbx9Q8",
+      y: "qNPeoZOuVv-I6e-oUt9imwV6TSt-ymTaaW2Mrlgo0JQ",
+    },
+  ],
+};
 const devMockAuthEnabled =
   process.env.NODE_ENV === "development" && process.env.DEV_MOCK_AUTH === "true";
 const devMockProviderEntityId = "https://idp.demo.test";
@@ -146,19 +162,48 @@ if (unsupportedPolicyOperators.length) {
   throw new Error(`Unsupported provider metadata policy operators: ${unsupportedPolicyOperators.join(", ")}`);
 }
 
-const TRUST_ANCHOR_JWKS = {
-  keys: [
-    {
-      kty: "EC",
-      crv: "P-256",
-      alg: "ES256",
-      use: "sig",
-      kid: "xcXdyJ2_7cOd05QIqfpdrb3j5-mYFw8dqdcqzEh0lUw",
-      x: "hh5u_VrRXLaXNAdZX2CQWNAXFqgDCYhYGY1y1qbx9Q8",
-      y: "qNPeoZOuVv-I6e-oUt9imwV6TSt-ymTaaW2Mrlgo0JQ",
-    },
-  ],
-};
+function parseJsonEnv(name, value) {
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(`${name} must contain valid JSON: ${error.message}`, { cause: error });
+    }
+    throw error;
+  }
+}
+
+function loadTrustAnchors() {
+  const configuredTrustAnchors = process.env.TRUST_ANCHORS_JSON;
+  if (configuredTrustAnchors !== undefined) {
+    const parsedTrustAnchors = parseJsonEnv("TRUST_ANCHORS_JSON", configuredTrustAnchors);
+    if (!Array.isArray(parsedTrustAnchors) || parsedTrustAnchors.length === 0) {
+      throw new Error("TRUST_ANCHORS_JSON must contain a non-empty JSON array.");
+    }
+    return parsedTrustAnchors.map((entry, index) => {
+      if (!isRecord(entry)) {
+        throw new Error(`TRUST_ANCHORS_JSON entry ${index + 1} must be a JSON object.`);
+      }
+      if (typeof entry.entityId !== "string" || !entry.entityId.trim()) {
+        throw new Error(`TRUST_ANCHORS_JSON entry ${index + 1} must include a non-empty entityId string.`);
+      }
+      if (!isRecord(entry.jwks)) {
+        throw new Error(`TRUST_ANCHORS_JSON entry ${index + 1} must include a jwks object.`);
+      }
+      return { entityId: entry.entityId, jwks: entry.jwks };
+    });
+  }
+
+  const trustAnchorEntityId = process.env.TRUST_ANCHOR_ENTITY_ID ?? DEFAULT_TRUST_ANCHOR_ENTITY_ID;
+  const trustAnchorJwks =
+    process.env.TRUST_ANCHOR_JWKS !== undefined
+      ? parseJsonEnv("TRUST_ANCHOR_JWKS", process.env.TRUST_ANCHOR_JWKS)
+      : DEFAULT_TRUST_ANCHOR_JWKS;
+  if (!isRecord(trustAnchorJwks)) {
+    throw new Error("TRUST_ANCHOR_JWKS must contain a JSON object.");
+  }
+  return [{ entityId: trustAnchorEntityId, jwks: trustAnchorJwks }];
+}
 
 const appOrigin = (process.env.APP_ORIGIN ?? "").replace(/\/+$/, "");
 if (!appOrigin) {
@@ -208,9 +253,14 @@ if (
 ) {
   throw new Error("OIDC_SCOPE must be a non-empty space-separated list containing 'openid'.");
 }
-const trustAnchors = createTrustAnchorSet([
-  { entityId: entityId(TRUST_ANCHOR_ENTITY_ID), jwks: TRUST_ANCHOR_JWKS },
-]);
+const trustAnchorConfigs = loadTrustAnchors();
+const primaryTrustAnchorEntityId = trustAnchorConfigs[0].entityId;
+const trustAnchors = createTrustAnchorSet(
+  trustAnchorConfigs.map(({ entityId: trustAnchorEntityId, jwks }) => ({
+    entityId: entityId(trustAnchorEntityId),
+    jwks,
+  })),
+);
 const keyDirectory = path.resolve(process.env.KEY_DIRECTORY ?? path.join(__dirname, ".keys"));
 const keyFile = path.join(keyDirectory, "rp-keys.json");
 const providerMetadataLimit = createConcurrencyLimiter(6);
@@ -452,7 +502,7 @@ async function fetchEntityCollectionProviders() {
   for (let page = 0; page < 1000; page += 1) {
     const pageUrl = new URL(endpoint);
     pageUrl.searchParams.append("entity_type", "openid_provider");
-    pageUrl.searchParams.append("trust_anchor", TRUST_ANCHOR_ENTITY_ID);
+    pageUrl.searchParams.append("trust_anchor", primaryTrustAnchorEntityId);
     if (cursor) pageUrl.searchParams.set("from", cursor);
 
     const response = await federationHttpClient(pageUrl);
