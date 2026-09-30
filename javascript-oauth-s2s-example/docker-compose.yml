@@ -1,0 +1,20 @@
+services:
+  s2s-demo:
+    build: .
+    init: true
+    env_file:
+      - .env
+    environment:
+      DEV_MOCK_AUTH: ${DEV_MOCK_AUTH:-true}
+      SERVICE_BIND_ADDRESS: 0.0.0.0
+    ports:
+      - "127.0.0.1:8443:8443"
+      - "127.0.0.1:4101:4101"
+      - "127.0.0.1:4102:4102"
+    volumes:
+      - demo-keys:/app/.keys
+      - caddy-data:/data
+
+volumes:
+  demo-keys:
+  caddy-data:

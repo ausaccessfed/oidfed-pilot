@@ -1,0 +1,5 @@
+.env
+.keys
+.caddy-root.crt
+node_modules
+npm-debug.log

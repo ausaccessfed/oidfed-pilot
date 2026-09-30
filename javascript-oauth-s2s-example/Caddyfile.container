@@ -1,0 +1,22 @@
+{
+	admin 127.0.0.1:2020
+	auto_https disable_redirects
+}
+
+ta.s2s.dev.localhost:8443 {
+	bind 0.0.0.0
+	tls internal
+	reverse_proxy 127.0.0.1:4101
+}
+
+ingester.s2s.dev.localhost:8443 {
+	bind 0.0.0.0
+	tls internal
+	reverse_proxy 127.0.0.1:4101
+}
+
+sender.s2s.dev.localhost:8443 {
+	bind 0.0.0.0
+	tls internal
+	reverse_proxy 127.0.0.1:4102
+}

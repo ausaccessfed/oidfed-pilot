@@ -9,6 +9,7 @@ configuration, and setup instructions.
 | Example | Description | Guide |
 | --- | --- | --- |
 | `javascript-spa-example/` | JavaScript single-page sign-in app with a Node.js OpenID Federation relying-party backend and Caddy HTTPS development setup. | [README](javascript-spa-example/README.md) |
+| `javascript-oauth-s2s-example/` | Federated OAuth 2.0 client-credentials transfer between a sender and ingester. | [README](javascript-oauth-s2s-example/README.md) |
 
 Run commands from the example's directory unless its guide says otherwise.
 New examples should be added as separate top-level directories with their own
